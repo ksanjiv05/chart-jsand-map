@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #open {
+        height: 350px;
+        width: 100%;
+        position: absolute;
+        background: #2d2727bf;
+        z-index: 111;
+        /* padding-left: 20px; */
+        font-family: monospace;
+        color: white;
+      }
+      .center-chart {
+        /* position: absolute; */
+        bottom: 10;
+        left: 20;
+        width: 200px;
+        float: left;
+      }
+      .close {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: red;
+        top: 15px;
+        right: 50px;
+        text-align: center;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .container {
+        width: 100%;
+        height: 500px;
+        background: #f1f1f1;
+      }
+      .conA {
+        width: 30%;
+        height: 300px;
+        float: left;
+        /* background: royalblue; */
+        position: relative;
+      }
+      .conB {
+        width: 40%;
+        height: 300px;
+        /* background: rgb(153, 160, 182); */
+        float: left;
+        position: relative;
+      }
+      .backg {
+        width: 100%;
+        height: 280px;
+        /* background-color: saddlebrown; */
+      }
+      .imageCon {
+        width: 100px;
+        height: 100px;
+        background-color: seagreen;
+        margin-top: -50px;
+        border-radius: 69px;
+        overflow: hidden;
+      }
+      .TextCon {
+        width: 200px;
+        /* background: antiquewhite; */
+        height: 120px;
+        margin-top: 25px;
+        margin-left: 75px;
+      }
+      .chartCon {
+        width: 340px;
+        height: 340px;
+        background: antiquewhite;
+        margin-top: -200px;
+        border-radius: 200px;
+      }
+      .subhead {
+        font-size: 20px;
+        font-weight: 500;
+        color: #939393;
+        font-family: sans-serif;
+        text-transform: capitalize;
+      }
+      .title {
+        font-size: 24px;
+        font-weight: 500;
+        color: #707070;
+        font-family: sans-serif;
+        text-transform: capitalize;
+      }
+      .text {
+        font-size: 15px;
+        font-weight: 500;
+        color: #707070;
+        font-family: sans-serif;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
+
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+    <script
+      async
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBGDTnpNJWkAd0_Qw7FBLUMQoG5kYxIIgY"
+    ></script>
+  </head>
+  <body>
+    <div style="height: 400px; width: 100%">
+      <div id="open">
+        <div class="close" onclick="closeCon()">X</div>
+        <div class="container">
+          <div class="backg">
+            <img
+              src="https://picsum.photos/200"
+              alt="back"
+              style="width: 100%; height: 100%"
+            />
+          </div>
+          <div class="conA">
+            <center>
+              <div class="imageCon">
+                <img
+                  src="https://static.wixstatic.com/media/be2920_7f000485c8914e4b889ac4f58cc9eef9~mv2.png"
+                  alt="back"
+                  style="margin-top: 0px; width: 100%"
+                />
+              </div>
+            </center>
+            <div class="TextCon">
+              <div class="subhead" id="name">sanjiv kumar</div>
+              <div class="title" id="company">Innobuzz</div>
+              <div class="text" id="sector">sector/industry</div>
+              <div class="text" id="sdate">sector/industry</div>
+
+              <div class="text" id="status">status</div>
+            </div>
+          </div>
+          <div class="conB">
+            <center>
+              <div class="chartCon">
+                <canvas
+                  id="chart"
+                  style="position: absolute; margin-top: -5px"
+                ></canvas>
+                <canvas
+                  id="chart2"
+                  style="position: absolute; margin-top: -5px"
+                ></canvas>
+              </div>
+            </center>
+          </div>
+          <div class="conA">
+            <center>
+              <div class="imageCon">
+                <img
+                  src="https://picsum.photos/200"
+                  alt="back"
+                  class="imageCon"
+                  style="margin-top: 0px"
+                />
+              </div>
+            </center>
+            <div class="TextCon">
+              <div class="subhead"></div>
+              <div class="title" id="footprint">Footprint</div>
+              <div class="text" id="scope">sector/industry</div>
+              <div class="text" id="progress">status</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="map" style="height: 500px; width: 100%"></div>
+    </div>
+  </body>
+  <script>
+    let map;
+    // let marker;
+    let geocoder;
+    function closeCon() {
+      console.log("calling close");
+      document.getElementById("open").style.display = "none";
+    }
+    document.getElementById("open").style.display = "none";
+    window.onmessage = (event) => {
+      if (event.data) {
+        document.getElementById("open").style.display = "none";
+        map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 3,
+          center: { lat: -28.024, lng: 140.887 },
+        });
+
+        geocoder = new google.maps.Geocoder();
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: "",
+          disableAutoPan: true,
+        });
+
+        const zipCodes = ["89898", "816102", "800001"];
+        let markers = [];
+
+        Promise.all(
+          event.data.allData.map(async (v, i) => {
+            console.log("marker +++llllllllllllllllllll+++++", v);
+            let position = await geocode({ address: v.pin + "" }, v.pin + "");
+            console.log("marker ++++++++", v, position);
+            const marker = new google.maps.Marker({
+              map,
+            });
+            marker.setPosition(position);
+
+            map.setCenter(position);
+            marker.setMap(map);
+
+            marker.addListener("click", () => {
+              // infoWindow.setContent(label);
+              // infoWindow.open(map, marker);
+
+              chart({
+                ch1: v.ch1,
+                ch2: v.ch2,
+                others: v.others,
+              });
+              console.log("clicked on marker");
+            });
+            markers.push(marker);
+            return marker;
+          })
+        ).then((values) => {
+          console.log("all values ", values, markers);
+          new markerClusterer.MarkerClusterer({ markers, map });
+        });
+
+        console.log("maekerss ", markers);
+      }
+    };
+
+    function chart({ ch1, ch2, others }) {
+      console.log("maekerss ", others);
+      document.getElementById("open").style.display = "block";
+      var ctx = document.getElementById("chart");
+      const factor = (ch1[0] + ch1[1] + ch1[2]) / (ch1[3] + ch1[4]);
+      const x1 = ch1[3] * factor;
+      const x2 = ch1[4] * factor;
+      var chart = new Chart(ctx, {
+        type: "doughnut",
+        options: {
+          cutoutPercentage: 60,
+          elements: {
+            arc: {
+              borderWidth: 0,
+            },
+          },
+        },
+        data: {
+          datasets: [
+            {
+              backgroundColor: ["black", "#787878", "#a8a8a8", "red", "green"],
+              data: [ch1[0], ch1[1], ch1[2], x1, x2],
+            },
+          ],
+        },
+      });
+      var ctx2 = document.getElementById("chart2");
+      var chart2 = new Chart(ctx2, {
+        type: "doughnut",
+        options: {
+          cutoutPercentage: 95,
+          elements: {
+            arc: {
+              borderWidth: 0,
+            },
+          },
+        },
+        data: {
+          datasets: [
+            {
+              backgroundColor: ["yellow"],
+              data: ch2,
+            },
+          ],
+        },
+      });
+    }
+
+    async function geocode(request, label) {
+      const result = await geocoder.geocode(request);
+      const { results } = result;
+      console.log(results[0].geometry.location, "result of address ");
+
+      return results[0].geometry.location;
+    }
+  </script>
+</html>

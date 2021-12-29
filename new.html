@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #open {
+        height: 350px;
+        width: 20%;
+        position: absolute;
+        background: white;
+        z-index: 111;
+        padding-left: 20px;
+        font-family: monospace;
+      }
+      .center-chart {
+        position: absolute;
+        bottom: 10;
+        left: 20;
+        width: 180px;
+      }
+      .close {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: red;
+        top: 0;
+        right: 0;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
+
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+    <script
+      async
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCQQ5II26YpMWoSJgPCanEIIYEkg0_MFzs&callback=initMap"
+    ></script>
+  </head>
+  <body>
+    <div style="height: 400px; width: 100%">
+      <div id="open">
+        <div class="close">X</div>
+        <h4>Carbon Emistion :</h4>
+        <p id="area"></p>
+        <div class="center-chart">
+          <canvas id="dug"></canvas>
+        </div>
+      </div>
+      <div id="map" style="height: 350px; width: 100%"></div>
+    </div>
+    <div id="infowindow-content">testing</div>
+  </body>
+  <script>
+    let map;
+    let marker;
+    let geocoder;
+
+    function initMap() {
+      document.getElementById("open").style.display = "none";
+      map = new google.maps.Map(document.getElementById("map"), {
+        zoom: 3,
+        center: { lat: -28.024, lng: 140.887 },
+      });
+
+      geocoder = new google.maps.Geocoder();
+
+      const infoWindow = new google.maps.InfoWindow({
+        content: "",
+        disableAutoPan: true,
+      });
+      // Create an array of alphabetical characters used to label the markers.
+      const labels = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      // Add some markers to the map.
+
+      marker = new google.maps.Marker({
+        map,
+      });
+
+      //   const markers = locations.map((position, i) => {
+      //     const label = labels[i % labels.length];
+      //     const marker = new google.maps.Marker({
+      //       position,
+      //       //   label,
+      //     });
+
+      //     // markers can only be keyboard focusable when they have click listeners
+      //     // open info window when marker is clicked
+      //     marker.addListener("click", () => {
+      //       infoWindow.setContent(label);
+      //       infoWindow.open(map, marker);
+      //       createChart(label);
+      //     });
+      //     return marker;
+      //   });
+      geocode({ address: "110008" });
+      //   map.addListener("click", (e) => {
+      //     geocode({ location: e.latLng });
+      //   });
+      // Add a marker clusterer to manage the markers.
+      //   new markerClusterer.MarkerClusterer({ markers, map });
+    }
+    function clear() {
+      marker.setMap(null);
+      //   responseDiv.style.display = "none";
+    }
+    const locations = [
+      { lat: -31.56391, lng: 147.154312 },
+      { lat: -33.718234, lng: 150.363181 },
+      { lat: -33.727111, lng: 150.371124 },
+      { lat: -33.848588, lng: 151.209834 },
+      { lat: -33.851702, lng: 151.216968 },
+      { lat: -34.671264, lng: 150.863657 },
+      { lat: -35.304724, lng: 148.662905 },
+      { lat: -36.817685, lng: 175.699196 },
+      { lat: -36.828611, lng: 175.790222 },
+      { lat: -37.75, lng: 145.116667 },
+      { lat: -37.759859, lng: 145.128708 },
+      { lat: -37.765015, lng: 145.133858 },
+      { lat: -37.770104, lng: 145.143299 },
+      { lat: -37.7737, lng: 145.145187 },
+      { lat: -37.774785, lng: 145.137978 },
+      { lat: -37.819616, lng: 144.968119 },
+      { lat: -38.330766, lng: 144.695692 },
+      { lat: -39.927193, lng: 175.053218 },
+      { lat: -41.330162, lng: 174.865694 },
+      { lat: -42.734358, lng: 147.439506 },
+      { lat: -42.734358, lng: 147.501315 },
+      { lat: -42.735258, lng: 147.438 },
+      { lat: -43.999792, lng: 170.463352 },
+    ];
+
+    function halfdugnut() {
+      let config_2 = {
+        type: "doughnut",
+        data: {
+          datasets: [
+            {
+              data: [1, 1, 1],
+              label: "Dataset 1",
+              backgroundColor: [
+                "rgb(255, 99, 132)", //black
+                "rgb(54, 162, 235)", //gray
+                "rgb(255, 205, 86)", //light gray
+              ],
+            },
+          ],
+          labels: ["Red", "Orange", "Yellow"], //red and green
+        },
+        options: {
+          legend: {
+            display: false,
+          },
+          circumference: 1 * Math.PI,
+          rotation: -0.5 * Math.PI,
+        },
+      };
+
+      return config_2;
+    }
+
+    function createChart(label) {
+      document.getElementById("open").style.display = "block";
+      document.getElementById("area").innerHTML = label;
+      var ctx = document.getElementById("dug").getContext("2d");
+      new Chart(ctx, halfdugnut());
+    }
+    function close() {
+      document.getElementById("open").style.display = "none";
+    }
+
+    function geocode(request) {
+      clear();
+      geocoder
+        .geocode(request)
+        .then((result) => {
+          const { results } = result;
+
+          console.log("result of address ", results);
+
+          map.setCenter(results[0].geometry.location);
+          marker.setPosition(results[0].geometry.location);
+          marker.setMap(map);
+
+          marker.addListener("click", () => {
+            // infoWindow.setContent(label);
+            // infoWindow.open(map, marker);
+            // createChart(label);
+            console.log("clicked on marker");
+          });
+
+          return results;
+        })
+        .catch((e) => {
+          alert("Geocode was not successful for the following reason: " + e);
+        });
+    }
+    //AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg
+    //AIzaSyCQQ5II26YpMWoSJgPCanEIIYEkg0_MFzs
+  </script>
+</html>

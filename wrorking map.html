@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #open {
+        height: 350px;
+        width: 100%;
+        position: absolute;
+        background: #2d2727bf;
+        z-index: 111;
+        /* padding-left: 20px; */
+        font-family: monospace;
+        color: white;
+      }
+      .center-chart {
+        /* position: absolute; */
+        bottom: 10;
+        left: 20;
+        width: 200px;
+        float: left;
+      }
+      .close {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: red;
+        top: 15px;
+        right: 50px;
+        text-align: center;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
+
+    <script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+    <script
+      async
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBGDTnpNJWkAd0_Qw7FBLUMQoG5kYxIIgY"
+    ></script>
+  </head>
+  <body>
+    <div style="height: 400px; width: 100%">
+      <div id="open">
+        <div class="close" onclick="closeCon()">X</div>
+        <center style="padding-top: 50px">
+          <div style="width: 30%; float: left">
+            <h4>MCID 100001</h4>
+            <h4>CompanyACE Inc</h4>
+          </div>
+
+          <div style="width: 38%; float: left">
+            <!-- <div class="center-chart">
+              <canvas id="dugx"></canvas>
+            </div> -->
+            <div class="center-chart">
+              <canvas id="dug" style="margin-left: 94px"></canvas>
+            </div>
+            <div class="center-chart">
+              <canvas id="dug2"></canvas>
+            </div>
+          </div>
+          <div style="width: 30%; float: left">
+            <img
+              src="https://www.map-collective.com/assets/images/footprint_vertical.png"
+              style="width: 120px; height: 200px"
+            />
+            <h4>Annual CO2e emissions per person</h4>
+
+            <h3 style="color: red">
+              3.58 Global hectare (gha) CO<sub>2</sub>3
+            </h3>
+          </div>
+        </center>
+      </div>
+      <div id="map" style="height: 350px; width: 100%"></div>
+    </div>
+  </body>
+  <script>
+    let map;
+    // let marker;
+    let geocoder;
+    function closeCon() {
+      console.log("calling close");
+      document.getElementById("open").style.display = "none";
+    }
+
+    window.onmessage = (event) => {
+      if (event.data) {
+        console.log("---------------------------", event.data);
+        //function initMap() {
+        document.getElementById("open").style.display = "none";
+        map = new google.maps.Map(document.getElementById("map"), {
+          zoom: 3,
+          center: { lat: -28.024, lng: 140.887 },
+        });
+
+        geocoder = new google.maps.Geocoder();
+
+        const infoWindow = new google.maps.InfoWindow({
+          content: "",
+          disableAutoPan: true,
+        });
+
+        const zipCodes = ["110008", "816102", "800001"];
+        let markers = [];
+        Promise.all(
+          event.data.allData.map(async (v, i) => {
+            console.log("marker +++llllllllllllllllllll+++++", v);
+            let position = await geocode({ address: v.pin + "" }, v.pin + "");
+            console.log("marker ++++++++", v, position);
+            const marker = new google.maps.Marker({
+              map,
+            });
+            marker.setPosition(position);
+
+            map.setCenter(position);
+            marker.setMap(map);
+
+            marker.addListener("click", () => {
+              // infoWindow.setContent(label);
+              // infoWindow.open(map, marker);
+              createChart(v.pin + "", v.chartData1, v.chartData2);
+              console.log("clicked on marker");
+            });
+            markers.push(marker);
+            return marker;
+          })
+        ).then((values) => {
+          console.log("all values ", values, markers);
+          new markerClusterer.MarkerClusterer({ markers, map });
+        });
+
+        console.log("maekerss ", markers);
+        //}
+      }
+    };
+
+    function halfdugnut1(chdata1) {
+      let config_2 = {
+        type: "doughnut",
+        data: {
+          datasets: [
+            {
+              data: chdata1,
+              label: "Dataset 1",
+              backgroundColor: ["black", "#787878", "#a8a8a8"],
+            },
+          ],
+          labels: ["Red", "green", "Yellow"],
+        },
+        options: {
+          legend: {
+            display: false,
+          },
+          circumference: 1 * Math.PI,
+          rotation: -1.5 * Math.PI,
+        },
+      };
+
+      return config_2;
+    }
+
+    function halfdugnut2(chdata) {
+      let config_2 = {
+        type: "doughnut",
+        data: {
+          datasets: [
+            {
+              data: chdata,
+              label: "Dataset 1",
+              backgroundColor: ["red", "green"],
+            },
+          ],
+          labels: ["Red", "Orange"],
+        },
+        options: {
+          legend: {
+            display: false,
+          },
+          layout: {
+            padding: {
+              left: -10,
+            },
+          },
+          circumference: 1 * Math.PI,
+          rotation: -0.5 * Math.PI,
+        },
+      };
+
+      return config_2;
+    }
+
+    function createChart(label, chdata1, chdata) {
+      document.getElementById("open").style.display = "block";
+      //   document.getElementById("area").innerHTML = label;
+      var ctx = document.getElementById("dug").getContext("2d");
+      new Chart(ctx, halfdugnut1(chdata1));
+      var ctx2 = document.getElementById("dug2").getContext("2d");
+      new Chart(ctx2, halfdugnut2(chdata));
+      var ctx3 = document.getElementById("dugx").getContext("2d");
+      new Chart(ctx3, halfdugnut1());
+    }
+
+    async function geocode(request, label) {
+      const result = await geocoder.geocode(request);
+      const { results } = result;
+      console.log(results[0].geometry.location, "result of address ", results);
+
+      return results[0].geometry.location;
+    }
+
+    import wixData from "wix-data";
+
+    $w.onReady(function () {
+      wixData
+        .query("Account")
+        .find()
+        .then((results) => {
+          console.log("nb account---", results);
+          if (results.items.length > 0) {
+            const dataObj = results.items.map((item) => {
+              let obj = {
+                pin: item.zipCode,
+                chartData1: [item.scope1, item.scope2, item.scope3],
+                chartData2: [item.offsetEere, item.carbonBalance],
+              };
+
+              return obj;
+            });
+            console.log("map obj x ", dataObj);
+
+            $w("#html1").postMessage({
+              allData: dataObj,
+            });
+          }
+        })
+        .catch((error) => {
+          let errorMsg = error.message;
+          let code = error.code;
+          console.log("nb error", errorMsg);
+        });
+    });
+  </script>
+</html>

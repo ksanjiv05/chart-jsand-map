@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #open {
+        height: 242px;
+        width: 100%;
+        position: absolute;
+        background: #2d2727bf;
+        z-index: 111;
+        /* padding-left: 20px; */
+        font-family: monospace;
+        color: white;
+      }
+      .center-chart {
+        /* position: absolute; */
+        bottom: 10;
+        left: 20;
+        width: 160px;
+        float: left;
+        margin-top: 25px;
+      }
+      .close {
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        background-color: red;
+        top: 15px;
+        right: 50px;
+        text-align: center;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .chatBox {
+        margin: 0;
+        padding: 0;
+        background: red;
+      }
+
+      .footprint {
+        width: 80px;
+        height: 95px;
+        background: #494949;
+      }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.4.0/Chart.bundle.min.js"></script>
+  </head>
+  <body>
+    <div style="height: 245px; width: 100%">
+      <div id="open">
+        <center style="padding-top: 15px">
+          <div style="width: 445px; float: left">
+            <!-- <div class="center-chart">
+              <canvas id="dugx"></canvas>
+            </div> -->
+            <div class="center-chart">
+              <canvas id="dug"></canvas>
+            </div>
+            <div class="center-chart" style="margin-left: -81px">
+              <canvas id="dug2"></canvas>
+            </div>
+            <div>
+              <div style="width: 205px; float: right">
+                <img
+                  src="https://www.map-collective.com/assets/images/footprint_vertical.png"
+                  class="footprint"
+                />
+                <div>
+                  <h4>Annual CO2e emissions per person</h4>
+
+                  <h3 style="color: red">
+                    3.58 Global hectare (gha) CO<sub>2</sub>3
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </center>
+      </div>
+      <div id="map" style="height: 350px; width: 100%"></div>
+    </div>
+  </body>
+  <script>
+    let map;
+    // let marker;
+    let geocoder;
+
+    createChart({ data1: [1, 1, 1], data2: [1, 1] });
+
+    function halfdugnut1(data1) {
+      console.log("i got data", data1);
+
+      let config_2 = {
+        type: "doughnut",
+        data: {
+          datasets: [
+            {
+              data: data1,
+              label: "Dataset 1",
+              backgroundColor: ["black", "#787878", "#a8a8a8"],
+            },
+          ],
+          labels: ["Red", "green", "Yellow"],
+          borderWidth: [0, 0, 0],
+        },
+        options: {
+          legend: {
+            display: false,
+          },
+          segmentShowStroke: false,
+          elements: {
+            arc: {
+              borderWidth: 0,
+            },
+          },
+          layout: {
+            padding: {
+              left: -10,
+              right: 0,
+            },
+            margin: {
+              left: 0,
+              right: 0,
+            },
+          },
+          circumference: 1 * Math.PI,
+          rotation: -1.5 * Math.PI,
+        },
+      };
+
+      return config_2;
+    }
+
+    function halfdugnut2(data2) {
+      let config_2 = {
+        type: "doughnut",
+        data: {
+          datasets: [
+            {
+              data: data2,
+              label: "Dataset 1",
+              backgroundColor: ["red", "green"],
+            },
+          ],
+          labels: ["Red", "Orange"],
+        },
+        options: {
+          legend: {
+            display: false,
+          },
+          layout: {
+            padding: {
+              left: -10,
+              right: 0,
+            },
+            margin: {
+              left: 0,
+              right: 0,
+            },
+          },
+          circumference: 1 * Math.PI,
+          rotation: -0.5 * Math.PI,
+        },
+      };
+
+      return config_2;
+    }
+
+    function createChart(chartData) {
+      const { data1 = [], data2 = [] } = chartData;
+      console.log(data2, data1);
+
+      document.getElementById("open").style.display = "block";
+      //   document.getElementById("area").innerHTML = label;
+      var ctx = document.getElementById("dug").getContext("2d");
+      new Chart(ctx, halfdugnut1(data1));
+      var ctx2 = document.getElementById("dug2").getContext("2d");
+      new Chart(ctx2, halfdugnut2(data2));
+    }
+
+    async function geocode(request, label) {
+      const result = await geocoder.geocode(request);
+      const { results } = result;
+      console.log(results[0].geometry.location, "result of address ", results);
+
+      return results[0].geometry.location;
+    }
+  </script>
+</html>
